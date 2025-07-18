@@ -11,16 +11,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Clona o seu repositório para a máquina virtual
+      # 1. Clona o seu repositório
       - name: "Checkout GitHub Action"
         uses: actions/checkout@v3
 
-      # 2. Faz o deploy para o Serviço de Aplicativo da Azure
-      # A própria Azure se encarregará de instalar as dependências e construir o projeto.
+      # 2. Configura o ambiente Node.js
+      - name: "Set up Node.js"
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20.x" # Garante a mesma versão
+
+      # 3. Instala as dependências e constrói o projeto
+      # Isso prepara as pastas .next e node_modules para produção
+      - name: "Install Dependencies and Build"
+        run: |
+          npm install
+          npm run build
+
+      # 4. Cria um arquivo .zip com os arquivos de produção
+      - name: "Create zip artifact for deployment"
+        run: zip -r release.zip . -x ".git/*" ".github/*" "DOCS.md" "README.md"
+
+      # 5. Faz o deploy do arquivo .zip para a Azure
       - name: "Deploy to Azure Web App"
         uses: azure/webapps-deploy@v2
         with:
-          app-name: "macae-tempo" # Nome do seu App Service na Azure
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }} # Usa o segredo que configuramos
-          # A opção 'package' é omitida para que a action envie o código fonte,
-          # ativando o build automático na Azure (Oryx).
+          app-name: "macae-tempo"
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: release.zip # Aponta para o nosso arquivo zip
+
