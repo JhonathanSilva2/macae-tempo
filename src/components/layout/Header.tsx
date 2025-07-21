@@ -1,8 +1,10 @@
 import ButtonAppBar from "@/design-system/components/AppBar"
+import React from "react"
 
-export default function Home() {
+export default function Header() {
   return (
-    <div>
+    <div className="">
+      <div>Header</div>
       <ButtonAppBar />
     </div>
   )
